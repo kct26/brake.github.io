@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --bg: #0a0c0f;
@@ -16,9 +16,9 @@
   --text: #e8e4dc;
   --text2: #9a958c;
   --text3: #5a5650;
-  --mono: 'Space Mono', monospace;
-  --display: 'Syne', sans-serif;
-  --body: 'DM Sans', sans-serif;
+  --mono: 'Roboto Mono', monospace;
+  --display: 'Inter', sans-serif;
+  --body: 'Inter', sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,7 +30,8 @@ body {
   color: var(--text);
   font-family: var(--body);
   font-size: 15px;
-  line-height: 1.6;
+  font-weight: 400;
+  line-height: 1.7;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -86,8 +87,9 @@ nav {
   align-items: center;
   height: 100%;
   padding: 0 1rem;
-  font-family: var(--mono);
-  font-size: 11px;
+  font-family: var(--body);
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text2);
   text-decoration: none;
   border-bottom: 2px solid transparent;
@@ -140,25 +142,25 @@ main {
 /* HEADINGS */
 h1 {
   font-family: var(--display);
-  font-weight: 800;
-  font-size: clamp(28px, 4vw, 48px);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: var(--text);
 }
 
 h2 {
   font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(18px, 2.5vw, 26px);
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  font-size: clamp(18px, 2.5vw, 24px);
+  letter-spacing: -0.01em;
 }
 
 h3 {
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-family: var(--body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text2);
 }
@@ -203,15 +205,15 @@ h3 {
   font-size: 11px;
   color: var(--text3);
   margin-top: 4px;
-  font-family: var(--mono);
+  font-family: var(--body);
 }
 
 /* BUTTONS */
 button, .btn {
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-family: var(--body);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 8px 18px;
   border-radius: 6px;
