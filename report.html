@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thuyết minh kỹ thuật — Wanderers</title>
+<link rel="stylesheet" href="assets/style.css">
+<style>
+.report-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+@media (max-width: 700px) { .report-layout { grid-template-columns: 1fr; } }
+
+/* Sidebar TOC */
+.toc {
+  position: sticky;
+  top: 72px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.2rem;
+}
+.toc-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8rem;
+}
+.toc a {
+  display: block;
+  padding: 5px 8px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  text-decoration: none;
+  border-radius: 4px;
+  margin-bottom: 2px;
+  border-left: 2px solid transparent;
+  transition: all 0.15s;
+}
+.toc a:hover { background: var(--bg3); color: var(--text); }
+.toc a.active { color: var(--accent); border-left-color: var(--accent); background: rgba(240,165,0,0.07); }
+.toc a.sub { padding-left: 18px; font-size: 10px; color: var(--text3); }
+.toc a.sub:hover { color: var(--text2); }
+
+/* Report content */
+.report-section {
+  margin-bottom: 2.5rem;
+  scroll-margin-top: 72px;
+}
+.report-section > h2 {
+  font-size: 22px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.report-section p {
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 0.8rem;
+  font-size: 14px;
+}
+.report-section ul {
+  color: var(--text2);
+  padding-left: 1.2rem;
+  margin-bottom: 0.8rem;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.report-section ul li::marker { color: var(--accent); }
+.report-section b, .report-section strong { color: var(--text); }
+
+.callout {
+  background: rgba(240,165,0,0.07);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 0.8rem 1.2rem;
+  margin: 1rem 0;
+  font-size: 14px;
+  color: var(--text2);
+}
+.callout b { color: var(--accent); }
+
+.phase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.phase-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.phase-card .day {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.phase-card h4 {
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.phase-card ul {
+  font-size: 12px;
+  padding-left: 1rem;
+  color: var(--text3);
+  line-height: 1.7;
+}
+.phase-card ul li::marker { color: var(--text3); }
+
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.spec-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.spec-table td:first-child { color: var(--text3); font-family: var(--mono); font-size: 11px; width: 160px; }
+.spec-table td:last-child { color: var(--text); }
+
+.physics-diagram {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+}
+.eq-block {
+  text-align: center;
+  padding: 1rem;
+  margin: 0.5rem 0;
+}
+.eq-big {
+  font-family: var(--mono);
+  font-size: 20px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.eq-small {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+/* Print styles */
+@media print {
+  .toc { display: none; }
+  .report-layout { grid-template-columns: 1fr; }
+  nav { display: none; }
+  body { background: white; color: #222; }
+  .card, .physics-diagram, .phase-card { border: 1px solid #ccc; background: white; }
+  h1, h2, h3 { color: #000; }
+  p, li { color: #444; }
+  .eq-big { color: #d4900a; }
+  .callout { background: #fffbf0; border-color: #d4900a; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="index.html">⚡ WANDERERS</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Tổng quan</a></li>
+    <li><a href="simulation.html">Mô phỏng</a></li>
+    <li><a href="data.html">Số liệu</a></li>
+    <li><a href="report.html" class="active">Thuyết minh</a></li>
+  </ul>
+</nav>
+
+<main>
+  <div style="margin-bottom:1.5rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="label">TTNNĐ 2026 · STEM/STEAM</div>
+      <h2 style="margin-top:0.5rem;">Thuyết minh kỹ thuật</h2>
+      <p style="color:var(--text2);font-size:14px;margin-top:6px;">Nhóm Wanderers — Hệ thống phanh từ tính thụ động cho thang máy</p>
+    </div>
+    <button onclick="window.print()" class="no-print" style="align-self:center;">🖨️ In thuyết minh</button>
+  </div>
+
+  <div class="report-layout">
+    <!-- TOC sidebar -->
+    <aside class="toc no-print">
+      <div class="toc-title">Mục lục</div>
+      <a href="#s1">1. Tóm tắt dự án</a>
+      <a href="#s2">2. Vấn đề & Giải pháp</a>
+      <a href="#s3">3. Cơ sở khoa học</a>
+      <a href="#s3" class="sub">3.1 Định luật Faraday</a>
+      <a href="#s3" class="sub">3.2 Định luật Lenz</a>
+      <a href="#s3" class="sub">3.3 Terminal Velocity</a>
+      <a href="#s4">4. Thiết kế mô hình</a>
+      <a href="#s4" class="sub">4.1 Đường ray</a>
+      <a href="#s4" class="sub">4.2 Cabin</a>
+      <a href="#s4" class="sub">4.3 Khe hở từ tính</a>
+      <a href="#s5">5. Quy trình thực nghiệm</a>
+      <a href="#s6">6. Lộ trình 7 ngày</a>
+      <a href="#s7">7. Vật liệu & Chi phí</a>
+      <a href="#s8">8. Tài liệu tham khảo</a>
+    </aside>
+
+    <!-- Report body -->
+    <article>
+      <!-- Section 1 -->
+      <div class="report-section" id="s1">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 1</div>
+        <h2>Tóm tắt dự án</h2>
+        <div class="card card-accent">
+          <p><strong>Tên dự án:</strong> Hệ thống phanh từ tính thụ động — Giải pháp chống rơi tự do vĩnh cửu cho thang máy.</p>
+          <p><strong>Nhóm thực hiện:</strong> Wanderers</p>
+          <p><strong>Lĩnh vực:</strong> Sản phẩm giáo dục STEM/STEAM</p>
+          <p><strong>Thời gian triển khai:</strong> 7 ngày (Chiến thuật "6 ngày chuẩn bị — 1 ngày Build tổng lực")</p>
+        </div>
+        <div class="callout">
+          <b>Điểm cốt lõi:</b> Không phụ thuộc vào điện — phanh hoạt động bằng định luật vật lý. Không có chi tiết tiếp xúc — không bao giờ mài mòn. Tự động tăng lực khi tốc độ tăng.
+        </div>
+      </div>
+
+      <!-- Section 2 -->
+      <div class="report-section" id="s2">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 2</div>
+        <h2>Vấn đề & Giải pháp</h2>
+        <p><strong>Vấn đề thực tế:</strong> Hệ thống phanh cơ khí truyền thống của thang máy có những rủi ro nghiêm trọng: bị hỏng hóc do mài mòn sau thời gian dài sử dụng, mất tác dụng khi mất điện đột ngột, và cần bảo trì định kỳ tốn kém. Những sự cố này có thể dẫn đến tai nạn rơi tự do thương tâm.</p>
+        <p><strong>Giải pháp của nhóm:</strong> Chế tạo mô hình thang máy trang bị <strong>hệ thống phanh từ tính thụ động</strong> sử dụng nam châm vĩnh cửu Neodymium, hiện tượng dòng điện Foucault và hệ thống giảm chấn vật lý.</p>
+        <ul>
+          <li><strong>Vĩnh cửu & an toàn tuyệt đối:</strong> Phanh tự kích hoạt nhờ định luật vật lý, không cần nguồn điện.</li>
+          <li><strong>Không mài mòn:</strong> Không có chi tiết tiếp xúc cơ học — tuổi thọ lý thuyết vô hạn.</li>
+          <li><strong>Tự điều chỉnh:</strong> Tốc độ rơi càng cao → dòng Foucault càng mạnh → lực cản càng lớn.</li>
+          <li><strong>Thuần vật lý:</strong> Triệt tiêu ~90% động năng bằng lực từ tính, sau đó dừng êm bằng giảm chấn cơ học.</li>
+        </ul>
+      </div>
+
+      <!-- Section 3 -->
+      <div class="report-section" id="s3">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 3</div>
+        <h2>Cơ sở khoa học</h2>
+
+        <h3 style="margin-bottom:0.5rem;margin-top:1rem;">3.1 Định luật Faraday (Cảm ứng điện từ)</h3>
+        <div class="physics-diagram">
+          <div class="eq-block">
+            <div class="eq-big">ε = −dΦ/dt</div>
+            <div class="eq-small">Suất điện động cảm ứng tỉ lệ với tốc độ biến thiên từ thông</div>
+          </div>
+        </div>
+        <p>Khi cabin (có gắn cánh nhôm dẫn điện) rơi vào vùng từ trường của dãy nam châm Neodymium, từ thông Φ xuyên qua tấm nhôm biến thiên liên tục. Theo định luật Faraday, sự biến thiên này sinh ra suất điện động cảm ứng ε, từ đó tạo ra <strong>dòng điện xoáy Foucault</strong> bên trong khối nhôm dẫn điện.</p>
+
+        <h3 style="margin-bottom:0.5rem;margin-top:1rem;">3.2 Định luật Lenz (Chiều dòng điện Foucault)</h3>
+        <div class="physics-diagram">
+          <div class="eq-block">
+            <div class="eq-big">F_L = −k · v</div>
+            <div class="eq-small">Lực cản từ tính tỉ lệ thuận với vận tốc, dấu (−) thể hiện lực ngược chiều chuyển động</div>
+          </div>
+        </div>
+        <p>Dòng Foucault sinh ra một từ trường phụ. Theo định luật Lenz, từ trường phụ này luôn tương tác với nam châm vĩnh cửu để <strong>cản trở nguyên nhân sinh ra nó</strong> — tức là cản lại chuyển động rơi xuống của cabin. Lực Lorentz F_L hướng ngược chiều vận tốc.</p>
+        <p>Hệ số k phụ thuộc vào: độ mạnh của nam châm (B²), diện tích tấm nhôm (A), độ dẫn điện của nhôm (σ), và khe hở từ tính (air gap).</p>
+
+        <h3 style="margin-bottom:0.5rem;margin-top:1rem;">3.3 Phương trình chuyển động & Terminal Velocity</h3>
+        <div class="physics-diagram">
+          <div class="eq-block">
+            <div class="eq-big">m · (dv/dt) = mg − kv</div>
+            <div class="eq-small">Phương trình vi phân mô tả chuyển động có phanh từ</div>
+          </div>
+          <div class="eq-block" style="padding-top:0;">
+            <div class="eq-big" style="font-size:16px;">v(t) = v<sub>max</sub> · (1 − e<sup>−kt/m</sup>)</div>
+            <div class="eq-small">Nghiệm của phương trình — vận tốc hội tụ về v_max theo hàm mũ</div>
+          </div>
+          <div class="eq-block" style="padding-top:0;">
+            <div class="eq-big">v_max = m · g / k</div>
+            <div class="eq-small">Terminal Velocity: vận tốc cực đại khi lực cản = trọng lực. Tăng k để giảm v_max.</div>
+          </div>
+        </div>
+        <p>Khi lực cản từ tính cân bằng với trọng lực (F_L = mg), gia tốc bằng 0 và cabin đạt vận tốc cực đại v_max. Đây là nguyên lý tương tự như <strong>Drop Tower Rides</strong> (trò chơi tháp rơi tự do) tại các công viên giải trí, sử dụng phanh từ để dừng cabin an toàn.</p>
+        <div class="callout">
+          <b>Ý nghĩa thực tế:</b> Với m = 0.5 kg và k = 3 N·s/m, v_max = 0.5×9.81/3 ≈ 1.64 m/s — an toàn cho quả trứng cút bên trong! Hệ thống giảm chấn ở đáy (lò xo/xốp) xử lý phần vận tốc còn lại.
+        </div>
+      </div>
+
+      <!-- Section 4 -->
+      <div class="report-section" id="s4">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 4</div>
+        <h2>Thiết kế mô hình vật lý</h2>
+        <p>Mô hình cao khoảng 1 mét, bao gồm 3 phần chính:</p>
+
+        <h3 style="margin-bottom:0.5rem;margin-top:1rem;">4.1 Đường ray (Stator)</h3>
+        <table class="spec-table">
+          <tr><td>Vật liệu</td><td>Nhôm định hình hoặc gỗ MDF 10mm</td></tr>
+          <tr><td>Nam châm</td><td>Neodymium N52, vuông 20×10×5mm, 30 viên</td></tr>
+          <tr><td>Cách sắp xếp</td><td><strong>Xen kẽ cực N-S-N-S</strong> để từ thông biến thiên liên tục tối đa</td></tr>
+          <tr><td>Đoạn phanh</td><td>30cm cuối (khoảng 50–60% chiều cao từ đáy)</td></tr>
+          <tr><td>Lưu ý</td><td>Kiểm tra cực nam châm bằng la bàn trước khi dán. Sai cực = không có phanh!</td></tr>
+        </table>
+
+        <h3 style="margin-bottom:0.5rem;margin-top:1rem;">4.2 Cabin (Rotor)</h3>
+        <table class="spec-table">
+          <tr><td>Hộp cabin</td><td>Nhựa mica trong suốt hoặc PLA 3D print</td></tr>
+          <tr><td>Cánh nhôm</td><td>2 cánh nhôm dày ≥3mm, 2 bên sườn cabin</td></tr>
+          <tr><td>Diện tích</td><td>Càng lớn càng tốt — diện tích lớn → dòng Foucault mạnh hơn</td></tr>
+          <tr><td>Tải trọng thử</td><td>1–2 quả trứng cút để kiểm tra an toàn</td></tr>
+        </table>
+
+        <h3 style="margin-bottom:0.5rem;margin-top:1rem;">4.3 Khe hở từ tính (Air Gap) & Giảm chấn</h3>
+        <table class="spec-table">
+          <tr><td>Air Gap</td><td>1–2mm giữa cánh nhôm và mặt nam châm</td></tr>
+          <tr><td>Quan trọng</td><td>Không để chạm — ma sát cơ học sẽ ảnh hưởng kết quả thực nghiệm</td></tr>
+          <tr><td>Giảm chấn đáy</td><td>Mút xốp dày ≥5cm hoặc lò xo nhỏ để hấp thụ phần vận tốc còn lại</td></tr>
+          <tr><td>Tinh chỉnh</td><td>Thả thử không tải trước, điều chỉnh air gap cho cabin lướt mượt nhất</td></tr>
+        </table>
+      </div>
+
+      <!-- Section 5 -->
+      <div class="report-section" id="s5">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 5</div>
+        <h2>Quy trình thu thập & phân tích số liệu</h2>
+        <p>Mục tiêu: Trực quan hóa sự khác biệt giữa rơi tự do và rơi có phanh từ tính bằng dữ liệu thực nghiệm.</p>
+        <ul>
+          <li><strong>Thiết bị:</strong> Điện thoại quay Slow-motion (≥240fps). Đặt nằm ngang, cố định, có thước đo trong khung hình.</li>
+          <li><strong>Số lần thả:</strong> Tối thiểu 10 lần mỗi trường hợp (có phanh / không có phanh).</li>
+          <li><strong>Phần mềm phân tích:</strong> Tracker (miễn phí) hoặc Python OpenCV để trích xuất vị trí theo frame.</li>
+          <li><strong>Dữ liệu cần ghi:</strong> Thời gian rơi t (s), vận tốc chạm đáy v (m/s), vị trí y tại mỗi frame.</li>
+          <li><strong>Trực quan hóa:</strong> Vẽ đồ thị v(t) thực nghiệm và đặt cạnh đường lý thuyết. Tính sai số tương đối.</li>
+        </ul>
+        <div class="callout">
+          <b>Tip:</b> Dùng trang <a href="data.html" style="color:var(--accent);">Số liệu thực nghiệm</a> để nhập dữ liệu, tự động tính thống kê và vẽ đồ thị so sánh cho báo cáo.
+        </div>
+      </div>
+
+      <!-- Section 6 -->
+      <div class="report-section" id="s6">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 6</div>
+        <h2>Lộ trình 7 ngày thần tốc</h2>
+        <div class="phase-grid">
+          <div class="phase-card">
+            <div class="day">Ngày 1–2</div>
+            <h4>Chuẩn bị vật liệu</h4>
+            <ul>
+              <li>Đặt mua nam châm Neodymium N52 (30 viên)</li>
+              <li>Mua tấm nhôm 3mm, gỗ/formex</li>
+              <li>Cài Tracker / Python OpenCV</li>
+              <li>Nghiên cứu video tham khảo</li>
+            </ul>
+          </div>
+          <div class="phase-card">
+            <div class="day">Ngày 3–4</div>
+            <h4>Gia công cơ khí</h4>
+            <ul>
+              <li>Cắt gỗ/formex làm đường ray và cabin</li>
+              <li>Đánh dấu vị trí dán nam châm</li>
+              <li>Cắt tấm nhôm làm cánh Foucault</li>
+              <li>Chuẩn bị lò xo / mút xốp đáy</li>
+            </ul>
+          </div>
+          <div class="phase-card">
+            <div class="day">Ngày 5–6</div>
+            <h4>Hoàn thiện tài liệu</h4>
+            <ul>
+              <li>Viết 80% bản thuyết minh</li>
+              <li>Chèn công thức vật lý</li>
+              <li>Luyện phân tích video Tracker</li>
+              <li>Kẻ bảng ghi số liệu</li>
+            </ul>
+          </div>
+          <div class="phase-card" style="border-color:rgba(240,165,0,0.3);">
+            <div class="day" style="color:var(--accent);">Ngày 7 — BUILD DAY</div>
+            <h4>Lắp ráp & Thực nghiệm</h4>
+            <ul>
+              <li><b>Sáng:</b> Lắp khung, dán nam châm xen kẽ cực, gắn cánh nhôm</li>
+              <li><b>Trưa:</b> Ghép cabin, tinh chỉnh Air Gap</li>
+              <li><b>Chiều:</b> Thả 10+ lần, quay slow-mo, đặt trứng cút</li>
+              <li><b>Tối:</b> Xuất đồ thị, hoàn thiện hồ sơ, nộp thi</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 7 -->
+      <div class="report-section" id="s7">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 7</div>
+        <h2>Vật liệu & Dự kiến chi phí</h2>
+        <table>
+          <thead>
+            <tr><th>Vật liệu</th><th>Số lượng</th><th>Dự kiến</th><th>Ghi chú</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Nam châm Neodymium N52 (20×10×5mm)</td><td>30 viên</td><td>~150,000đ</td><td>Mua dư 5 viên dự phòng</td></tr>
+            <tr><td>Tấm nhôm dày 3mm</td><td>1 tấm A4</td><td>~50,000đ</td><td>Cắt làm 2 cánh Foucault</td></tr>
+            <tr><td>Gỗ MDF / Formex 10mm</td><td>~1m²</td><td>~80,000đ</td><td>Làm đường ray và cabin</td></tr>
+            <tr><td>Mica trong suốt 3mm</td><td>nhỏ</td><td>~30,000đ</td><td>Cabin cho thấy trứng bên trong</td></tr>
+            <tr><td>Lò xo nhỏ / Mút xốp dày</td><td>1 bộ</td><td>~20,000đ</td><td>Giảm chấn đáy hố thang</td></tr>
+            <tr><td>Keo dán mạnh (epoxy)</td><td>1 tuýp</td><td>~25,000đ</td><td>Dán nam châm vào rãnh</td></tr>
+            <tr><td>Trứng cút</td><td>1 vỉ</td><td>~15,000đ</td><td>Payload thử nghiệm an toàn</td></tr>
+            <tr><td>Vít, ốc, dây buộc</td><td>misc</td><td>~20,000đ</td><td>Cố định cơ học</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="2"><strong>Tổng dự kiến</strong></td><td><strong style="color:var(--accent);">~390,000đ</strong></td><td>Khoảng 400k VNĐ</td></tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Section 8 -->
+      <div class="report-section" id="s8">
+        <div class="label" style="margin-bottom:0.5rem;">Phần 8</div>
+        <h2>Tài liệu tham khảo & Video hướng dẫn</h2>
+        <ul>
+          <li><strong>"Physics saves teacher's neck — Dr. Dawson"</strong> (YouTube): Minh họa lực phanh từ tính qua thí nghiệm lưỡi dao rơi sát cổ — chứng minh độ mạnh của hiện tượng Foucault.</li>
+          <li><strong>"Eddy current brake demonstration DIY"</strong> (YouTube): Xem cách tự chế hệ thống phanh từ Foucault đơn giản tại nhà.</li>
+          <li><strong>"How Drop Tower Rides Work"</strong> (YouTube): Cách trò chơi tháp rơi tự do tại công viên giải trí sử dụng phanh từ để dừng cabin an toàn — nguyên lý hoàn toàn giống dự án.</li>
+          <li><strong>"Build a Magnetic Braking System — Science Buddies"</strong> (YouTube/Web): Hướng dẫn thiết kế khung chi tiết cho học sinh.</li>
+          <li>Serway & Jewett, <em>Physics for Scientists and Engineers</em>, Chương 31: Faraday's Law.</li>
+          <li>Halliday, Resnick & Krane, <em>Physics</em> Vol.2, Chương 30: Induction and Inductance.</li>
+        </ul>
+        <div class="callout">
+          <b>Website dự án:</b> Toàn bộ mô phỏng, phân tích số liệu và thuyết minh có thể truy cập tại website đính kèm hồ sơ dự thi. Mã nguồn mở, chạy hoàn toàn trên trình duyệt, không cần cài đặt.
+        </div>
+      </div>
+
+    </article>
+  </div>
+</main>
+
+<script>
+// Highlight active TOC item on scroll
+const sections = document.querySelectorAll('.report-section');
+const tocLinks = document.querySelectorAll('.toc a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  tocLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+</body>
+</html>
