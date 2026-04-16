@@ -531,18 +531,19 @@ function startElevAnim(res, brakeOn) {
   function frame(ts) {
     if (!startTs) startTs = ts;
     const elapsed = (ts - startTs) / 1000 * speed;
-    const frac = Math.min(elapsed / res.totalT, 1.05);
+    const frac = Math.min(elapsed / res.totalT, 1.0);
     const idx = Math.min(Math.floor(frac * res.Y.length), res.Y.length - 1);
-    drawElev(res.Y[idx] || 0, res.V[idx] || 0, res.F[idx] || 0, simH, magStart, brakeOn, frac >= 1);
-    if (frac < 1) animId = requestAnimationFrame(frame);
+    const isDone = frac >= 1.0;
+    drawElev(res.Y[idx] || 0, res.V[idx] || 0, res.F[idx] || 0, simH, magStart, brakeOn, isDone, res.finalV);
+    if (!isDone) animId = requestAnimationFrame(frame);
     else {
-      drawElev(simH, 0, 0, simH, magStart, brakeOn, true);
+      drawElev(simH, res.finalV, res.F[res.F.length-1] || 0, simH, magStart, brakeOn, true, res.finalV);
     }
   }
   animId = requestAnimationFrame(frame);
 }
 
-function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done) {
+function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
   const W = elev.width, H = elev.height;
   ec.clearRect(0, 0, W, H);
 
@@ -665,16 +666,23 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done) {
   }
 
   if (done) {
-    const safeOk = brakeOn && vel < 0.8;
-    ec.fillStyle = safeOk ? 'rgba(45,184,122,0.15)' : 'rgba(224,64,64,0.15)';
+    const impactV = (finalV !== undefined) ? finalV : vel;
+    const safeOk = brakeOn && impactV < 0.8;
+    const warnOk = brakeOn && impactV >= 0.8 && impactV < 1.5;
+    let bgColor = 'rgba(224,64,64,0.15)';
+    let txtColor = '#e04040';
+    let msg = '✗ NGUY HIỂM';
+    if (safeOk) { bgColor = 'rgba(45,184,122,0.15)'; txtColor = '#2db87a'; msg = '✓ AN TOÀN'; }
+    else if (warnOk) { bgColor = 'rgba(240,165,0,0.15)'; txtColor = '#f0a500'; msg = '⚠ CẢNH BÁO'; }
+    ec.fillStyle = bgColor;
     ec.fillRect(0, H - botPad, W, botPad);
-    ec.fillStyle = safeOk ? '#2db87a' : '#e04040';
-    ec.font = 'bold 11px Space Mono';
+    ec.fillStyle = txtColor;
+    ec.font = 'bold 11px sans-serif';
     ec.textAlign = 'center';
-    ec.fillText(safeOk ? '✓ AN TOÀN' : '✗ NGUY HIỂM', W/2, H - botPad + 20);
-    ec.fillStyle = '#5a5650';
-    ec.font = '9px Space Mono';
-    ec.fillText(vel.toFixed(2) + ' m/s khi chạm đáy', W/2, H - botPad + 34);
+    ec.fillText(msg, W/2, H - botPad + 18);
+    ec.fillStyle = '#9a958c';
+    ec.font = '10px sans-serif';
+    ec.fillText(impactV.toFixed(2) + ' m/s khi chạm đáy', W/2, H - botPad + 34);
   }
 }
 
