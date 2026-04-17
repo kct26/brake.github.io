@@ -333,15 +333,18 @@ function getParams() {
     m: +document.getElementById('mass').value,
     k: +document.getElementById('kval').value,
     H: +document.getElementById('hval').value,
-    magStart: +document.getElementById('magStart').value / 100,
+    magPercent: +document.getElementById('magStart').value / 100,
   };
 }
 
 function simulate(brakeOn) {
-  const { m, k, H, magStart } = getParams();
+  const { m, k, H, magPercent } = getParams();
+  const magStart = 1 - magPercent;
+
   const dt = 0.001, maxT = 8;
   let v = 0, y = 0, t = 0, heatEnergy = 0;
-  const T=[], V=[], F=[], Y=[], Ek=[], Heat=[];
+  const T = [], V = [], F = [], Y = [], Ek = [], Heat = [];
+
   while (y < H && t < maxT) {
     const inZone = brakeOn && (y / H) >= magStart;
     const Fb = inZone ? k * v : 0;
@@ -350,6 +353,7 @@ function simulate(brakeOn) {
     y += v * dt;
     t += dt;
     heatEnergy += Fb * v * dt;
+
     if (Math.round(t / dt) % 20 === 0) {
       T.push(+t.toFixed(3));
       V.push(+v.toFixed(4));
@@ -359,6 +363,7 @@ function simulate(brakeOn) {
       Heat.push(+heatEnergy.toFixed(4));
     }
   }
+
   return { T, V, F, Y, Ek, Heat, finalV: v, totalT: t, heatTotal: heatEnergy };
 }
 
@@ -367,15 +372,52 @@ const TICK_C = '#5a5650';
 
 function mkLineOpts(ylabel, ymax) {
   return {
-    responsive: true, maintainAspectRatio: false, animation: false,
-    plugins: { legend: { display: false }, tooltip: {
-      backgroundColor: '#1e242c', titleColor: '#f0a500', bodyColor: '#e8e4dc',
-      borderColor: 'rgba(240,165,0,0.3)', borderWidth: 1,
-      callbacks: { label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3) }
-    }},
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e242c',
+        titleColor: '#f0a500',
+        bodyColor: '#e8e4dc',
+        borderColor: 'rgba(240,165,0,0.3)',
+        borderWidth: 1,
+        callbacks: {
+          label: ctx => ' ' + ctx.dataset.label + ': ' + ctx.parsed.y.toFixed(3)
+        }
+      }
+    },
     scales: {
-      x: { ticks: { color: TICK_C, maxTicksLimit: 8, font: { size: 10, family: 'Space Mono' } }, grid: { color: GRID_C }, title: { display: true, text: 'Thời gian (s)', color: TICK_C, font: { size: 10 } } },
-      y: { ticks: { color: TICK_C, font: { size: 10, family: 'Space Mono' } }, grid: { color: GRID_C }, title: { display: true, text: ylabel, color: TICK_C, font: { size: 10 } }, min: 0, suggestedMax: ymax }
+      x: {
+        ticks: {
+          color: TICK_C,
+          maxTicksLimit: 8,
+          font: { size: 10, family: 'Space Mono' }
+        },
+        grid: { color: GRID_C },
+        title: {
+          display: true,
+          text: 'Thời gian (s)',
+          color: TICK_C,
+          font: { size: 10 }
+        }
+      },
+      y: {
+        ticks: {
+          color: TICK_C,
+          font: { size: 10, family: 'Space Mono' }
+        },
+        grid: { color: GRID_C },
+        title: {
+          display: true,
+          text: ylabel,
+          color: TICK_C,
+          font: { size: 10 }
+        },
+        min: 0,
+        suggestedMax: ymax
+      }
     }
   };
 }
@@ -388,38 +430,64 @@ function initCharts() {
 
   vtC = new Chart(document.getElementById('vtChart'), {
     type: 'line',
-    data: { labels: [], datasets: [
-      { label: 'Phanh từ', data: [], borderColor: '#2db87a', borderWidth: 2, pointRadius: 0, tension: 0.4 },
-      { label: 'Tự do', data: [], borderColor: '#e04040', borderWidth: 1.5, pointRadius: 0, borderDash: [5,3], tension: 0.4 }
-    ]},
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Phanh từ', data: [], borderColor: '#2db87a', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+        { label: 'Tự do', data: [], borderColor: '#e04040', borderWidth: 1.5, pointRadius: 0, borderDash: [5,3], tension: 0.4 }
+      ]
+    },
     options: mkLineOpts('Vận tốc (m/s)', 8)
   });
 
   ftC = new Chart(document.getElementById('ftChart'), {
     type: 'line',
-    data: { labels: [], datasets: [
-      { label: 'F_brake', data: [], borderColor: '#8b6cf0', borderWidth: 2, pointRadius: 0, tension: 0.4,
-        fill: { target: 'origin', above: 'rgba(139,108,240,0.12)' } }
-    ]},
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: 'F_brake',
+          data: [],
+          borderColor: '#8b6cf0',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+          fill: { target: 'origin', above: 'rgba(139,108,240,0.12)' }
+        }
+      ]
+    },
     options: mkLineOpts('Lực phanh (N)', 20)
   });
 
   ytC = new Chart(document.getElementById('ytChart'), {
     type: 'line',
-    data: { labels: [], datasets: [
-      { label: 'Phanh từ', data: [], borderColor: '#f0a500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
-      { label: 'Tự do', data: [], borderColor: '#e04040', borderWidth: 1.5, pointRadius: 0, borderDash: [5,3], tension: 0.4 }
-    ]},
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Phanh từ', data: [], borderColor: '#f0a500', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+        { label: 'Tự do', data: [], borderColor: '#e04040', borderWidth: 1.5, pointRadius: 0, borderDash: [5,3], tension: 0.4 }
+      ]
+    },
     options: mkLineOpts('Vị trí (m)', 2.5)
   });
 
   etC = new Chart(document.getElementById('etChart'), {
     type: 'line',
-    data: { labels: [], datasets: [
-      { label: 'Động năng Ek', data: [], borderColor: '#3a8fd4', borderWidth: 2, pointRadius: 0, tension: 0.4 },
-      { label: 'Nhiệt Foucault', data: [], borderColor: '#e06020', borderWidth: 2, pointRadius: 0, tension: 0.4,
-        fill: { target: 'origin', above: 'rgba(224,96,32,0.10)' } }
-    ]},
+    data: {
+      labels: [],
+      datasets: [
+        { label: 'Động năng Ek', data: [], borderColor: '#3a8fd4', borderWidth: 2, pointRadius: 0, tension: 0.4 },
+        {
+          label: 'Nhiệt Foucault',
+          data: [],
+          borderColor: '#e06020',
+          borderWidth: 2,
+          pointRadius: 0,
+          tension: 0.4,
+          fill: { target: 'origin', above: 'rgba(224,96,32,0.10)' }
+        }
+      ]
+    },
     options: mkLineOpts('Năng lượng (J)', 10)
   });
 }
@@ -428,63 +496,86 @@ function updateMetrics(res, brakeOn) {
   const { m, k } = getParams();
   const vterm = (m * G / k).toFixed(2);
   const fmax = (k * +vterm).toFixed(1);
+
   document.getElementById('mVterm').textContent = brakeOn ? vterm : '—';
   document.getElementById('mFmax').textContent = brakeOn ? fmax + ' N' : '—';
   document.getElementById('mTime').textContent = res.totalT.toFixed(2) + ' s';
   document.getElementById('mVimpact').textContent = res.finalV.toFixed(2) + ' m/s';
   document.getElementById('mEnergy').textContent = res.heatTotal.toFixed(2) + ' J';
   document.getElementById('formulaResult').textContent = vterm + ' m/s';
-  document.getElementById('tauResult').textContent = (m/k).toFixed(2);
+  document.getElementById('tauResult').textContent = (m / k).toFixed(2);
+
   const badge = document.getElementById('safeBadge');
   if (!brakeOn) {
-    badge.className = 'badge badge-red'; badge.textContent = 'Rủi ro cao';
+    badge.className = 'badge badge-red';
+    badge.textContent = 'Rủi ro cao';
   } else if (res.finalV < 0.6) {
-    badge.className = 'badge badge-green'; badge.textContent = 'Ổn định';
+    badge.className = 'badge badge-green';
+    badge.textContent = 'Ổn định';
   } else if (res.finalV < 1.5) {
-    badge.className = 'badge badge-amber'; badge.textContent = 'Cần chỉnh';
+    badge.className = 'badge badge-amber';
+    badge.textContent = 'Cần chỉnh';
   } else {
-    badge.className = 'badge badge-red'; badge.textContent = 'Rủi ro cao';
+    badge.className = 'badge badge-red';
+    badge.textContent = 'Rủi ro cao';
   }
+
   const lbl = document.getElementById('modeLabel');
-  if (brakeOn) { lbl.className = 'badge badge-green'; lbl.textContent = 'Phanh từ ON'; }
-  else { lbl.className = 'badge badge-red'; lbl.textContent = 'Tự do'; }
+  if (brakeOn) {
+    lbl.className = 'badge badge-green';
+    lbl.textContent = 'Phanh từ ON';
+  } else {
+    lbl.className = 'badge badge-red';
+    lbl.textContent = 'Tự do';
+  }
 }
 
 function runMode(mode) {
   currentMode = mode;
   initCharts();
+
   const resB = simulate(true);
   const resF = simulate(false);
 
   if (mode === 'brake' || mode === 'both') {
-    const len = resB.T.length;
     vtC.data.labels = resB.T;
     vtC.data.datasets[0].data = resB.V;
+
     ftC.data.labels = resB.T;
     ftC.data.datasets[0].data = resB.F;
+
     ytC.data.labels = resB.T;
     ytC.data.datasets[0].data = resB.Y;
+
     etC.data.labels = resB.T;
     etC.data.datasets[0].data = resB.Ek;
     etC.data.datasets[1].data = resB.Heat;
   }
+
   if (mode === 'free' || mode === 'both') {
-    const len = Math.min(resB.T.length, resF.T.length);
     if (mode === 'free') {
       vtC.data.labels = resF.T;
       ytC.data.labels = resF.T;
     }
+
     vtC.data.datasets[1].data = resF.V.slice(0, vtC.data.labels.length);
     ytC.data.datasets[1].data = resF.Y.slice(0, ytC.data.labels.length);
+
     if (mode === 'free') {
       ftC.data.labels = resF.T;
       ftC.data.datasets[0].data = resF.T.map(() => 0);
+
       etC.data.labels = resF.T;
       etC.data.datasets[0].data = resF.Ek;
       etC.data.datasets[1].data = resF.T.map(() => 0);
     }
   }
-  vtC.update(); ftC.update(); ytC.update(); etC.update();
+
+  vtC.update();
+  ftC.update();
+  ytC.update();
+  etC.update();
+
   updateMetrics(mode === 'free' ? resF : resB, mode !== 'free');
   startElevAnim(mode === 'free' ? resF : resB, mode !== 'free');
 }
@@ -492,6 +583,7 @@ function runMode(mode) {
 function resetSim() {
   initCharts();
   currentMode = null;
+
   document.getElementById('mVterm').textContent = '—';
   document.getElementById('mFmax').textContent = '—';
   document.getElementById('mTime').textContent = '—';
@@ -499,11 +591,18 @@ function resetSim() {
   document.getElementById('mEnergy').textContent = '—';
   document.getElementById('formulaResult').textContent = '—';
   document.getElementById('tauResult').textContent = '—';
+
   document.getElementById('safeBadge').className = 'badge badge-amber';
   document.getElementById('safeBadge').textContent = '—';
+
   document.getElementById('modeLabel').className = 'badge badge-amber';
   document.getElementById('modeLabel').textContent = 'Chờ';
-  if (animId) { cancelAnimationFrame(animId); animId = null; }
+
+  if (animId) {
+    cancelAnimationFrame(animId);
+    animId = null;
+  }
+
   drawElevIdle();
 }
 
@@ -519,27 +618,53 @@ function drawElevIdle() {
   ec.fillStyle = '#5a5650';
   ec.font = '11px Space Mono';
   ec.textAlign = 'center';
-  ec.fillText('Nhấn nút để bắt đầu', W/2, H/2);
+  ec.fillText('Nhấn nút để bắt đầu', W / 2, H / 2);
 }
 
 function startElevAnim(res, brakeOn) {
   if (animId) cancelAnimationFrame(animId);
-  const { H: simH, magStart } = getParams();
+
+  const { H: simH, magPercent } = getParams();
+  const magStart = 1 - magPercent;
+
   let startTs = null;
-  const speed = 1.2; // playback speed multiplier
+  const speed = 1.2;
 
   function frame(ts) {
     if (!startTs) startTs = ts;
+
     const elapsed = (ts - startTs) / 1000 * speed;
     const frac = Math.min(elapsed / res.totalT, 1.0);
     const idx = Math.min(Math.floor(frac * res.Y.length), res.Y.length - 1);
     const isDone = frac >= 1.0;
-    drawElev(res.Y[idx] || 0, res.V[idx] || 0, res.F[idx] || 0, simH, magStart, brakeOn, isDone, res.finalV);
-    if (!isDone) animId = requestAnimationFrame(frame);
-    else {
-      drawElev(simH, res.finalV, res.F[res.F.length-1] || 0, simH, magStart, brakeOn, true, res.finalV);
+
+    drawElev(
+      res.Y[idx] || 0,
+      res.V[idx] || 0,
+      res.F[idx] || 0,
+      simH,
+      magStart,
+      brakeOn,
+      isDone,
+      res.finalV
+    );
+
+    if (!isDone) {
+      animId = requestAnimationFrame(frame);
+    } else {
+      drawElev(
+        simH,
+        res.finalV,
+        res.F[res.F.length - 1] || 0,
+        simH,
+        magStart,
+        brakeOn,
+        true,
+        res.finalV
+      );
     }
   }
+
   animId = requestAnimationFrame(frame);
 }
 
@@ -559,6 +684,7 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
   // Magnet zone
   const mzTop = topPad + trackH * magStart;
   const mzH = trackH * (1 - magStart);
+
   if (brakeOn) {
     ec.fillStyle = 'rgba(224,64,64,0.06)';
     ec.fillRect(railX - 52, mzTop, 104, mzH);
@@ -580,14 +706,18 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
 
   // Rail ticks
   for (let i = 0; i <= 5; i++) {
-    const ty = topPad + (i/5) * trackH;
+    const ty = topPad + (i / 5) * trackH;
     ec.strokeStyle = 'rgba(255,255,255,0.06)';
     ec.lineWidth = 1;
-    ec.beginPath(); ec.moveTo(railX - 65, ty); ec.lineTo(railX + 65, ty); ec.stroke();
+    ec.beginPath();
+    ec.moveTo(railX - 65, ty);
+    ec.lineTo(railX + 65, ty);
+    ec.stroke();
+
     ec.fillStyle = '#3a3a36';
     ec.font = '8px Space Mono';
     ec.textAlign = 'right';
-    ec.fillText((simH * (1 - i/5)).toFixed(1) + 'm', railX - 56, ty + 3);
+    ec.fillText((simH * (1 - i / 5)).toFixed(1) + 'm', railX - 56, ty + 3);
   }
 
   // Magnets
@@ -596,12 +726,15 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
     for (let i = 0; i < nM; i++) {
       const my = mzTop + 12 + (i / (nM - 1)) * (mzH - 30);
       const isN = i % 2 === 0;
+
       ec.fillStyle = isN ? '#7a1818' : '#0c3d6b';
       roundRect(ec, railX + 3, my, 9, 11, 2);
       ec.fill();
+
       ec.fillStyle = isN ? '#0c3d6b' : '#7a1818';
       roundRect(ec, railX - 46, my, 9, 11, 2);
       ec.fill();
+
       ec.fillStyle = '#ffffff99';
       ec.font = '6px Space Mono';
       ec.textAlign = 'center';
@@ -619,28 +752,33 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
     const ns = Math.floor(vel * 1.5);
     for (let s = 0; s < ns; s++) {
       const sx = railX + (Math.random() - 0.5) * 90;
-      const sy = cabY + cabH/2 + (Math.random() - 0.5) * 20;
+      const sy = cabY + cabH / 2 + (Math.random() - 0.5) * 20;
       ec.strokeStyle = `rgba(240,165,0,${0.4 + Math.random() * 0.6})`;
       ec.lineWidth = 1;
       ec.beginPath();
       ec.moveTo(sx, sy);
-      ec.lineTo(sx + (Math.random()-0.5)*12, sy - 8 - Math.random()*8);
+      ec.lineTo(sx + (Math.random() - 0.5) * 12, sy - 8 - Math.random() * 8);
       ec.stroke();
     }
   }
 
   // Cabin
-  const cx = railX - cabW/2;
+  const cx = railX - cabW / 2;
   ec.fillStyle = inZone ? '#3C3489' : '#1D9E75';
   roundRect(ec, cx, cabY, cabW, cabH, 5);
   ec.fill();
+
   ec.strokeStyle = inZone ? '#7F77DD' : '#2db87a';
   ec.lineWidth = 1.5;
   ec.stroke();
+
   // Fins
   ec.fillStyle = '#888';
-  roundRect(ec, cx - 9, cabY + 6, 7, 18, 2); ec.fill();
-  roundRect(ec, cx + cabW + 2, cabY + 6, 7, 18, 2); ec.fill();
+  roundRect(ec, cx - 9, cabY + 6, 7, 18, 2);
+  ec.fill();
+  roundRect(ec, cx + cabW + 2, cabY + 6, 7, 18, 2);
+  ec.fill();
+
   // Label
   ec.fillStyle = '#ffffff';
   ec.font = 'bold 9px Space Mono';
@@ -652,7 +790,10 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
   // Floor + spring
   ec.strokeStyle = '#2a2f38';
   ec.lineWidth = 2;
-  ec.beginPath(); ec.moveTo(railX-70, topPad+trackH); ec.lineTo(railX+70, topPad+trackH); ec.stroke();
+  ec.beginPath();
+  ec.moveTo(railX - 70, topPad + trackH);
+  ec.lineTo(railX + 70, topPad + trackH);
+  ec.stroke();
 
   // Status overlay
   ec.fillStyle = '#9a958c';
@@ -660,6 +801,7 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
   ec.textAlign = 'left';
   ec.fillText('v = ' + vel.toFixed(2) + ' m/s', 6, 18);
   ec.fillText('y = ' + posY.toFixed(2) + ' m', 6, 31);
+
   if (inZone && fBrake > 0.01) {
     ec.fillStyle = '#f0a500';
     ec.fillText('F = ' + fBrake.toFixed(1) + ' N', 6, 44);
@@ -669,48 +811,66 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
     const impactV = (finalV !== undefined) ? finalV : vel;
     const safeOk = brakeOn && impactV < 0.8;
     const warnOk = brakeOn && impactV >= 0.8 && impactV < 1.5;
+
     let bgColor = 'rgba(224,64,64,0.15)';
     let txtColor = '#e04040';
     let msg = '✗ NGUY HIỂM';
-    if (safeOk) { bgColor = 'rgba(45,184,122,0.15)'; txtColor = '#2db87a'; msg = '✓ AN TOÀN'; }
-    else if (warnOk) { bgColor = 'rgba(240,165,0,0.15)'; txtColor = '#f0a500'; msg = '⚠ CẢNH BÁO'; }
+
+    if (safeOk) {
+      bgColor = 'rgba(45,184,122,0.15)';
+      txtColor = '#2db87a';
+      msg = '✓ AN TOÀN';
+    } else if (warnOk) {
+      bgColor = 'rgba(240,165,0,0.15)';
+      txtColor = '#f0a500';
+      msg = '⚠ CẢNH BÁO';
+    }
+
     ec.fillStyle = bgColor;
     ec.fillRect(0, H - botPad, W, botPad);
+
     ec.fillStyle = txtColor;
     ec.font = 'bold 11px sans-serif';
     ec.textAlign = 'center';
-    ec.fillText(msg, W/2, H - botPad + 18);
+    ec.fillText(msg, W / 2, H - botPad + 18);
+
     ec.fillStyle = '#9a958c';
     ec.font = '10px sans-serif';
-    ec.fillText(impactV.toFixed(2) + ' m/s khi chạm đáy', W/2, H - botPad + 34);
+    ec.fillText(impactV.toFixed(2) + ' m/s khi chạm đáy', W / 2, H - botPad + 34);
   }
 }
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
-  ctx.moveTo(x+r, y);
-  ctx.lineTo(x+w-r, y); ctx.arcTo(x+w, y, x+w, y+r, r);
-  ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
-  ctx.lineTo(x+r, y+h); ctx.arcTo(x, y+h, x, y+h-r, r);
-  ctx.lineTo(x, y+r); ctx.arcTo(x, y, x+r, y, r);
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
   ctx.closePath();
 }
 
 // Slider event listeners
-['mass','kval','hval','magStart'].forEach(id => {
+['mass', 'kval', 'hval', 'magStart'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     const m = +document.getElementById('mass').value;
     const k = +document.getElementById('kval').value;
     const H = +document.getElementById('hval').value;
     const ms = +document.getElementById('magStart').value;
+
     document.getElementById('massV').textContent = (m * 1000).toFixed(0) + ' g';
     document.getElementById('kV').textContent = k.toFixed(1);
     document.getElementById('hV').textContent = H.toFixed(1) + ' m';
     document.getElementById('magV').textContent = ms + '%';
-    document.getElementById('formulaResult').textContent = (m*G/k).toFixed(2) + ' m/s';
-    document.getElementById('tauResult').textContent = (m/k).toFixed(2);
-    document.getElementById('mVterm').textContent = (m*G/k).toFixed(2);
-    document.getElementById('mFmax').textContent = (k*(m*G/k)).toFixed(1) + ' N';
+
+    document.getElementById('formulaResult').textContent = (m * G / k).toFixed(2) + ' m/s';
+    document.getElementById('tauResult').textContent = (m / k).toFixed(2);
+    document.getElementById('mVterm').textContent = (m * G / k).toFixed(2);
+    document.getElementById('mFmax').textContent = (m * G).toFixed(1) + ' N';
   });
 });
 
