@@ -763,7 +763,8 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
   }
 
   // Cabin
-  const cx = railX - cabW / 2;
+  const cabinCenterX = railX - 17;
+  const cx = cabinCenterX - cabW / 2;
   ec.fillStyle = inZone ? '#3C3489' : '#1D9E75';
   roundRect(ec, cx, cabY, cabW, cabH, 5);
   ec.fill();
@@ -783,9 +784,9 @@ function drawElev(posY, vel, fBrake, simH, magStart, brakeOn, done, finalV) {
   ec.fillStyle = '#ffffff';
   ec.font = 'bold 9px Space Mono';
   ec.textAlign = 'center';
-  ec.fillText('CABIN', railX, cabY + 13);
+  ec.fillText('CABIN', cabinCenterX, cabY + 13);
   ec.font = '12px sans-serif';
-  ec.fillText('🥚', railX, cabY + 26);
+  ec.fillText('🥚', cabinCenterX, cabY + 26);
 
   // Floor + spring
   ec.strokeStyle = '#2a2f38';
